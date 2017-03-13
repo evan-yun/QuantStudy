@@ -12,6 +12,7 @@ class MATest:
         self.long = 10
         self.listshort = []
         self.listlong = []
+        self.lastprice = 0.0
         self.balance = 100000.0
         self.BTCnum = 0.0
 
@@ -73,13 +74,15 @@ class MATest:
                     continue
                 self.BTCnum = self.balance / self.listprice[i]
                 print('买入' + str(self.balance) + '元, 共' + str(self.BTCnum) + '个BTC!')
+                self.lastprice = self.listprice[i]
                 self.balance = 0
             if sub1 > 0 and sub1 * sub2 < 0:
                 if self.BTCnum <= 0.0:
                     continue
-                self.balance = self.BTCnum * self.listprice[i]
-                print('卖出' + str(self.BTCnum) + '个BTC, 共' + str(self.balance) + '元!')
-                self.BTCnum = 0
+                if self.listprice[i] > self.lastprice:
+                    self.balance = self.BTCnum * self.listprice[i]
+                    print('卖出' + str(self.BTCnum) + '个BTC, 共' + str(self.balance) + '元!')
+                    self.BTCnum = 0
 
 if __name__ == '__main__':
     mat = MATest()
@@ -88,4 +91,3 @@ if __name__ == '__main__':
     mat.getlong()
     mat.trade()
     print('账户余额为：%d!' % mat.balance)
-        
