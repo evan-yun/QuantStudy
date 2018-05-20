@@ -9,8 +9,8 @@ from gateAPI import GateIO
 import json
 
 ## 填写 apiKey APISECRET
-apiKey = '8C5439D9-27E5-485F-B51F-7C44E729CBDD'
-secretKey = '719dca9fc2781fe0528fa29156bedb173cae9dfbac7d1a1fa063f768ee3469a0'
+apiKey = 'your apiKey'
+secretKey = 'your APISECRET'
 ## Provide constants
 API_QUERY_URL = 'data.gateio.io'
 API_TRADE_URL = 'api.gateio.io'
