@@ -64,7 +64,7 @@ def sell(coin, orders, total_count, gate_trade):
     sums = [sum(order_ammount[:index+1])  for index in range(len(order_ammount)) if sum(order_ammount[:index+1]) < total_count]
     if len(sums) < 1:
         # gate_trade.sell(coin, float(orders['bids'][0][0], total_count))
-        log('以【%.6f】的价格卖出了【%.6f】个，总价值为【%.6f】' % (float(orders['bids'][0][0]), total_count, total_pool))
+        log('以【%.6f】的价格卖出了【%.6f】个，总价值为【%.6f】' % (float(orders['bids'][0][0]), total_count, float(orders['bids'][0][0]) * total_count))
         return float(orders['bids'][0][0]) * total_count
     else:
         total_pool = 0.0
