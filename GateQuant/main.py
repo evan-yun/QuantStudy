@@ -6,8 +6,15 @@
 双均线策略: 5min & 4Hour
 '''
 from gateAPI import GateIO
+from mailhelper import MailHelper
 import json
 import time
+
+# 配置邮箱信息
+my_sender = 'your mailbox' # 发件人邮箱账号
+my_pass = 'your mailbox password' # 发件人邮箱密码
+my_user = 'mailto mailboxs' # 收件人邮箱账号，我这边发送给自己
+subject = 'subject'
 
 # 填写 apiKey APISECRET
 apiKey = 'your apiKey'
@@ -52,6 +59,7 @@ def get_ask_bid(coin):
     return gate_query.orderBook(coin)
 
 def buy(coin, orders, total_pool):
+    orders['asks'].reverse()
     order_ammount = [float(orders['asks'][index][0]) * float(orders['asks'][index][1]) for index in range(len(orders['asks']))]
     sums = [sum(order_ammount[:index+1])  for index in range(len(order_ammount)) if sum(order_ammount[:index+1]) < total_pool]
     if len(sums) < 1:
@@ -102,6 +110,7 @@ def log(content):
 if __name__ == '__main__':
     log('开始测试...')
     log('初始资金池为 %d' % total_pool)
+    mail_helper = MailHelper(my_sender, my_pass)
     buy_sell_flag = True
     while True:
         try:
@@ -109,28 +118,28 @@ if __name__ == '__main__':
             if signal == 1:
                 if buy_sell_flag:
                     total_count = buy(lst_coin[0], get_ask_bid(lst_coin[0]), total_pool)
-                    log('买入 %s' % lst_coin[0])
                     buy_sell_flag = False
                     total_pool = 0.0
-                    log('当前持仓为: 【现金】 %.6f, 【%s】 %.6f 个' % (total_pool, lst_coin[0], total_count))
+                    content = '买入 %s' % lst_coin[0] + '\n当前持仓为: 【现金】 %.6f, 【%s】 %.6f 个' % (total_pool, lst_coin[0], total_count)
+                    log(content)
+                    mail_helper.sendmail(my_user, subject, content)
                 else:
-                    log('取消买入【%s】动作，因为最近已经买入过' % lst_coin[0])
-                    log('当前持仓为: 【现金】 %.6f, 【%s】 %.6f 个' % (total_pool, lst_coin[0], total_count))
+                    log('取消买入【%s】动作，因为最近已经买入过' % lst_coin[0] + '\n当前持仓为: 【现金】 %.6f, 【%s】 %.6f 个' % (total_pool, lst_coin[0], total_count))
             elif signal == -1:
                 if not buy_sell_flag:
                     total_pool = sell(lst_coin[0], get_ask_bid(lst_coin[0]), total_count)
-                    log('卖出 %s' % lst_coin[0])
                     buy_sell_flag = True
                     total_count = 0.0
-                    log('当前持仓为: 【现金】 %.6f, 【%s】 %.6f 个' % (total_pool, lst_coin[0], total_count))
+                    content = '卖出 %s' % lst_coin[0] + '\n当前持仓为: 【现金】 %.6f, 【%s】 %.6f 个' % (total_pool, lst_coin[0], total_count)
+                    log(content)
+                    mail_helper.sendmail(my_user, subject, content)
                 else:
-                    log('取消卖出【%s】动作，因为最近已经卖出过' % lst_coin[0])
-                    log('当前持仓为: 【现金】 %.6f, 【%s】 %.6f 个' % (total_pool, lst_coin[0], total_count))
+                    log('取消卖出【%s】动作，因为最近已经卖出过' % lst_coin[0] + '\n当前持仓为: 【现金】 %.6f, 【%s】 %.6f 个' % (total_pool, lst_coin[0], total_count))
             else:
-                log('本次不操作 %s' % lst_coin[0])
-                log('当前持仓为: 【现金】 %.6f, 【%s】 %.6f 个' % (total_pool, lst_coin[0], total_count))
+                log('本次不操作 %s' % lst_coin[0] + '\n当前持仓为: 【现金】 %.6f, 【%s】 %.6f 个' % (total_pool, lst_coin[0], total_count))
             time.sleep(60)
         except Exception as ex:
             log('ERROR\t' + str(ex.args))
+            mail_helper.sendmail(my_user, subject, 'ERROR\t' + str(ex.args))
             time.sleep(60)
             continue
