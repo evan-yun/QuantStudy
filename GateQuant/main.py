@@ -49,47 +49,47 @@ def check_signal(coin, MA_values):
         return 0
 
 def get_ask_bid(coin):
-    return json.loads(gate_query.orderBook(coin))
+    return gate_query.orderBook(coin)
 
 def buy(coin, orders, total_pool):
-    order_ammount = [orders['asks'][index][0] * orders['asks'][index][1] for index in range(len(orders['asks']))]
+    order_ammount = [float(orders['asks'][index][0]) * float(orders['asks'][index][1]) for index in range(len(orders['asks']))]
     sums = [sum(order_ammount[:index+1])  for index in range(len(order_ammount)) if sum(order_ammount[:index+1]) < total_pool]
     if len(sums) < 1:
-        buy_count = total_pool / orders['asks'][0][0]
-        # gate_trade.buy(coin, orders['asks'][0][0], buy_count)
-        log('以【%.6f】的价格买入了【%.6f】个，总价值为【%.6f】' % (orders['asks'][0][0], buy_count, total_pool))
+        buy_count = total_pool / float(orders['asks'][0][0])
+        # gate_trade.buy(coin, float(orders['asks'][0][0], buy_count))
+        log('以【%.6f】的价格买入了【%.6f】个，总价值为【%.6f】' % (float(orders['asks'][0][0]), buy_count, total_pool))
         return buy_count
     else:
         total_count = 0.0
         for index in range(len(sums)):
-            total_count = total_count + orders['asks'][index][1]
-            # gate_trade.buy(coin, orders['asks'][index][0], orders['asks'][index][1])
-            log('以【%.6f】的价格买入了【%.6f】个，总价值为【%.6f】' % (orders['asks'][index][0], orders['asks'][index][1], orders['asks'][index][0] * orders['asks'][index][1]))
+            total_count = total_count + float(orders['asks'][index][1])
+            # gate_trade.buy(coin, float(orders['asks'][index][0]), float(orders['asks'][index][1]))
+            log('以【%.6f】的价格买入了【%.6f】个，总价值为【%.6f】' % (float(orders['asks'][index][0]), float(orders['asks'][index][1]), float(orders['asks'][index][0]) * float(orders['asks'][index][1])))
         rest_pool = total_pool - sums[-1]
-        buy_count = rest_pool / orders['asks'][len(sums)][0]
-        # gate_trade.buy(coin, orders['asks'][len(sums)][0], buy_count)
-        log('以【%.6f】的价格买入了【%.6f】个，总价值为【%.6f】' % (orders['asks'][len(sums)][0], buy_count, rest_pool))
+        buy_count = rest_pool / float(orders['asks'][len(sums)][0])
+        # gate_trade.buy(coin, float(orders['asks'][len(sums)][0], buy_count))
+        log('以【%.6f】的价格买入了【%.6f】个，总价值为【%.6f】' % (float(orders['asks'][len(sums)][0]), buy_count, rest_pool))
         log('以上总共买入了价值【%s】的【%s】' % (total_pool, coin))
         return total_count + buy_count
 
 def sell(coin, orders, total_count):
-    order_ammount = [orders['bids'][index][1] for index in range(len(orders['bids']))]
+    order_ammount = [float(orders['bids'][index][1]) for index in range(len(orders['bids']))]
     sums = [sum(order_ammount[:index+1])  for index in range(len(order_ammount)) if sum(order_ammount[:index+1]) < total_count]
     if len(sums) < 1:
-        # gate_trade.sell(coin, orders['bids'][0][0], total_count)
-        log('以【%.6f】的价格卖出了【%.6f】个，总价值为【%.6f】' % (orders['bids'][0][0], total_count, total_pool))
-        return orders['bids'][0][0] * total_count
+        # gate_trade.sell(coin, float(orders['bids'][0][0], total_count))
+        log('以【%.6f】的价格卖出了【%.6f】个，总价值为【%.6f】' % (float(orders['bids'][0][0]), total_count, total_pool))
+        return float(orders['bids'][0][0]) * total_count
     else:
         total_pool = 0.0
         for index in range(len(sums)):
-            # gate_trade.sell(coin, orders['bids'][index][0], orders['bids'][index][1])
-            total_pool = total_pool + orders['bids'][index][0] * orders['bids'][index][1]
-            log('以【%.6f】的价格卖出了【%.6f】个，总价值为【%.6f】' % (orders['bids'][index][0], orders['bids'][index][1], orders['bids'][index][0] * orders['bids'][index][1]))
+            # gate_trade.sell(coin, float(orders['bids'][index][0]), float(orders['bids'][index][1]))
+            total_pool = total_pool + float(orders['bids'][index][0]) * float(orders['bids'][index][1])
+            log('以【%.6f】的价格卖出了【%.6f】个，总价值为【%.6f】' % (float(orders['bids'][index][0]), float(orders['bids'][index][1]), float((orders['bids'][index][0]) * float(orders['bids'][index][1]))))
         rest_count = total_count - sums[-1]
-        # gate_trade.sell(coin, orders['bids'][len(sums)][0], rest_count)
-        log('以【%.6f】的价格卖出了【%.6f】个，总价值为【%.6f】' % (orders['bids'][len(sums)][0], buy_count, rest_count))
+        # gate_trade.sell(coin, float(orders['bids'][len(sums)][0], rest_count))
+        log('以【%.6f】的价格卖出了【%.6f】个，总价值为【%.6f】' % (float(orders['bids'][len(sums)][0]), buy_count, rest_count))
         log('以上总共卖出了价值【%s】的【%s】' % (initial_pool, coin))
-        return total_pool + rest_count * orders['bids'][len(sums)][0]
+        return total_pool + rest_count * float(orders['bids'][len(sums)][0])
 
 def log(content):
     timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
