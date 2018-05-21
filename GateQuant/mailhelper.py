@@ -24,8 +24,7 @@ class MailHelper:
             server.quit() # 关闭连接
         except Exception as ex:
             print(ex.args)
-            print(ex.value)
  
 if __name__ == "__main__":
-    mh = MailHelper('your mailbox', 'you mailbox password')
-    mh.sendmail('mailto mailboxs', 'subject', '这只是一个测试邮件,请不要回复!')
+    mh = MailHelper('your mailbox', 'your password')
+    mh.sendmail('mailto boxes', 'subject', '这只是一个测试邮件,请不要回复!')
