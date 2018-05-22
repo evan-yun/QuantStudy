@@ -10,6 +10,9 @@ from mailhelper import MailHelper
 import json
 import time
 
+import win_unicode_console
+win_unicode_console.enable()
+
 def get_MA(coin, gate_query):
     json_data = json.loads(gate_query.candle(coin, 15, 4))
     json_data['data'].reverse()
