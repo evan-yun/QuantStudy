@@ -80,7 +80,7 @@ def sell(coin, orders, total_count, gate_trade):
         rest_count = total_count - sums[-1]
         # gate_trade.sell(coin, float(orders['bids'][len(sums)][0], rest_count))
         content = content + log('以【%.6f】的价格卖出了【%.6f】个，总价值为【%.6f】' % (float(orders['bids'][len(sums)][0]), rest_count, rest_count * float(orders['bids'][len(sums)][0])))
-        content = content + log('以上总共卖出了价值【%s】的【%s】' % (initial_pool, coin))
+        content = content + log('以上总共卖出了价值【%s】的【%s】' % (total_pool + rest_count * float(orders['bids'][len(sums)][0]), coin))
         return total_pool + rest_count * float(orders['bids'][len(sums)][0]), content
 
 def log(content):
