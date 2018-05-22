@@ -38,45 +38,47 @@ def get_ask_bid(coin, gate_query):
     return gate_query.orderBook(coin)
 
 def buy(coin, orders, total_pool, gate_trade):
+    content = ''
     orders['asks'].reverse()
     order_ammount = [float(orders['asks'][index][0]) * float(orders['asks'][index][1]) for index in range(len(orders['asks']))]
     sums = [sum(order_ammount[:index+1])  for index in range(len(order_ammount)) if sum(order_ammount[:index+1]) < total_pool]
     if len(sums) < 1:
         buy_count = total_pool / float(orders['asks'][0][0])
         # gate_trade.buy(coin, float(orders['asks'][0][0], buy_count))
-        log('以【%.6f】的价格买入了【%.6f】个，总价值为【%.6f】' % (float(orders['asks'][0][0]), buy_count, total_pool))
-        return buy_count
+        content = content + log('以【%.6f】的价格买入了【%.6f】个，总价值为【%.6f】' % (float(orders['asks'][0][0]), buy_count, total_pool))
+        return buy_count, content
     else:
         total_count = 0.0
         for index in range(len(sums)):
             total_count = total_count + float(orders['asks'][index][1])
             # gate_trade.buy(coin, float(orders['asks'][index][0]), float(orders['asks'][index][1]))
-            log('以【%.6f】的价格买入了【%.6f】个，总价值为【%.6f】' % (float(orders['asks'][index][0]), float(orders['asks'][index][1]), float(orders['asks'][index][0]) * float(orders['asks'][index][1])))
+            content = content + log('以【%.6f】的价格买入了【%.6f】个，总价值为【%.6f】' % (float(orders['asks'][index][0]), float(orders['asks'][index][1]), float(orders['asks'][index][0]) * float(orders['asks'][index][1])))
         rest_pool = total_pool - sums[-1]
         buy_count = rest_pool / float(orders['asks'][len(sums)][0])
         # gate_trade.buy(coin, float(orders['asks'][len(sums)][0], buy_count))
-        log('以【%.6f】的价格买入了【%.6f】个，总价值为【%.6f】' % (float(orders['asks'][len(sums)][0]), buy_count, rest_pool))
-        log('以上总共买入了价值【%s】的【%s】' % (total_pool, coin))
-        return total_count + buy_count
+        content = content + log('以【%.6f】的价格买入了【%.6f】个，总价值为【%.6f】' % (float(orders['asks'][len(sums)][0]), buy_count, rest_pool))
+        content = content + log('以上总共买入了价值【%s】的【%s】' % (total_pool, coin))
+        return total_count + buy_count, content
 
 def sell(coin, orders, total_count, gate_trade):
+    content = ''
     order_ammount = [float(orders['bids'][index][1]) for index in range(len(orders['bids']))]
     sums = [sum(order_ammount[:index+1])  for index in range(len(order_ammount)) if sum(order_ammount[:index+1]) < total_count]
     if len(sums) < 1:
         # gate_trade.sell(coin, float(orders['bids'][0][0], total_count))
-        log('以【%.6f】的价格卖出了【%.6f】个，总价值为【%.6f】' % (float(orders['bids'][0][0]), total_count, float(orders['bids'][0][0]) * total_count))
-        return float(orders['bids'][0][0]) * total_count
+        content = content + log('以【%.6f】的价格卖出了【%.6f】个，总价值为【%.6f】' % (float(orders['bids'][0][0]), total_count, float(orders['bids'][0][0]) * total_count))
+        return float(orders['bids'][0][0]) * total_count, content
     else:
         total_pool = 0.0
         for index in range(len(sums)):
             # gate_trade.sell(coin, float(orders['bids'][index][0]), float(orders['bids'][index][1]))
             total_pool = total_pool + float(orders['bids'][index][0]) * float(orders['bids'][index][1])
-            log('以【%.6f】的价格卖出了【%.6f】个，总价值为【%.6f】' % (float(orders['bids'][index][0]), float(orders['bids'][index][1]), float((orders['bids'][index][0]) * float(orders['bids'][index][1]))))
+            content = content + log('以【%.6f】的价格卖出了【%.6f】个，总价值为【%.6f】' % (float(orders['bids'][index][0]), float(orders['bids'][index][1]), float(orders['bids'][index][0]) * float(orders['bids'][index][1])))
         rest_count = total_count - sums[-1]
         # gate_trade.sell(coin, float(orders['bids'][len(sums)][0], rest_count))
-        log('以【%.6f】的价格卖出了【%.6f】个，总价值为【%.6f】' % (float(orders['bids'][len(sums)][0]), buy_count, rest_count))
-        log('以上总共卖出了价值【%s】的【%s】' % (initial_pool, coin))
-        return total_pool + rest_count * float(orders['bids'][len(sums)][0])
+        content = content + log('以【%.6f】的价格卖出了【%.6f】个，总价值为【%.6f】' % (float(orders['bids'][len(sums)][0]), rest_count, rest_count * float(orders['bids'][len(sums)][0])))
+        content = content + log('以上总共卖出了价值【%s】的【%s】' % (initial_pool, coin))
+        return total_pool + rest_count * float(orders['bids'][len(sums)][0]), content
 
 def log(content):
     timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
@@ -85,6 +87,7 @@ def log(content):
     print(content)
     with open('.\\Logs\\' + filename + '.log', 'a+') as f:
         f.write(content)
+    return content
 
 def get_conf(conf_item):
     with open('app.conf', 'r') as f:
@@ -107,6 +110,7 @@ if __name__ == '__main__':
     buy_sell_flag = True
     while True:
         try:
+            content = ''
             mail_helper = MailHelper(get_conf('my_sender'), get_conf('my_pass'))
             # Create a gate class instance
             gate_query = GateIO(API_QUERY_URL, get_conf('apiKey'), get_conf('secretKey'))
@@ -114,21 +118,19 @@ if __name__ == '__main__':
             signal = check_signal(lst_coin[0], get_MA(lst_coin[0], gate_query))
             if signal == 1:
                 if buy_sell_flag:
-                    total_count = buy(lst_coin[0], get_ask_bid(lst_coin[0], gate_query), total_pool, gate_trade)
+                    total_count, content = buy(lst_coin[0], get_ask_bid(lst_coin[0], gate_query), total_pool, gate_trade)
                     buy_sell_flag = False
                     total_pool = 0.0
-                    content = '买入 %s' % lst_coin[0] + '\n当前持仓为: 【现金】 %.6f, 【%s】 %.6f 个' % (total_pool, lst_coin[0], total_count)
-                    log(content)
+                    content = content + log('买入 %s' % lst_coin[0] + '\n当前持仓为: 【现金】 %.6f, 【%s】 %.6f 个' % (total_pool, lst_coin[0], total_count))
                     mail_helper.sendmail(get_conf('my_user'), get_conf('subject'), content)
                 else:
                     log('取消买入【%s】动作，因为最近已经买入过' % lst_coin[0] + '\n当前持仓为: 【现金】 %.6f, 【%s】 %.6f 个' % (total_pool, lst_coin[0], total_count))
             elif signal == -1:
                 if not buy_sell_flag:
-                    total_pool = sell(lst_coin[0], get_ask_bid(lst_coin[0], gate_query), total_count, gate_trade)
+                    total_pool, content = sell(lst_coin[0], get_ask_bid(lst_coin[0], gate_query), total_count, gate_trade)
                     buy_sell_flag = True
                     total_count = 0.0
-                    content = '卖出 %s' % lst_coin[0] + '\n当前持仓为: 【现金】 %.6f, 【%s】 %.6f 个' % (total_pool, lst_coin[0], total_count)
-                    log(content)
+                    content = content + log('卖出 %s' % lst_coin[0] + '\n当前持仓为: 【现金】 %.6f, 【%s】 %.6f 个' % (total_pool, lst_coin[0], total_count))
                     mail_helper.sendmail(get_conf('my_user'), get_conf('subject'), content)
                 else:
                     log('取消卖出【%s】动作，因为最近已经卖出过' % lst_coin[0] + '\n当前持仓为: 【现金】 %.6f, 【%s】 %.6f 个' % (total_pool, lst_coin[0], total_count))
@@ -137,6 +139,6 @@ if __name__ == '__main__':
             time.sleep(60)
         except Exception as ex:
             log('ERROR\t' + str(ex.args))
-            mail_helper.sendmail(get_conf('my_user'), get_conf('subject'), 'ERROR\t' + str(ex.args))
+            mail_helper.sendmail(get_conf('my_warn_user'), get_conf('subject'), 'ERROR\t' + str(ex.args))
             time.sleep(60)
             continue
