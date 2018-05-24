@@ -85,7 +85,7 @@ def sell(coin, orders, total_count, gate_trade):
 
 def log(content):
     timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-    filename = time.strftime('%Y%m%d', time.localtime(time.time()))
+    filename = 'REVERSE-' + time.strftime('%Y%m%d', time.localtime(time.time()))
     content = 'REVERSE --- ' + timestamp + '\t' + content + '\n'
     print(content)
     with open('.\\Logs\\' + filename + '.log', 'a+') as f:
